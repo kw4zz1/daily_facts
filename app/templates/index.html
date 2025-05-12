@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Добро пожаловать в Daily Facts</h2>
+<p>Этот сервис позволяет получать случайные интересные факты на каждый день.</p>
+
+{% if request.cookies.get("access_token") %}
+    <p>Вы уже вошли в систему! <a href="/facts/">Перейти к фактам</a></p>
+{% else %}
+    <p><a href="/users/login">Войти</a> или <a href="/users/register">Зарегистрироваться</a>, чтобы начать.</p>
+{% endif %}
+{% endblock %}

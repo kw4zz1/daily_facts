@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Факт дня</h2>
+{% if fact %}
+    <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
+    <form method="post" action="/facts/save">
+        <input type="hidden" name="fact_id" value="{{ fact.id }}">
+        <button type="submit">Сохранить</button>
+    </form>
+{% else %}
+    <p>Фактов нет</p>
+{% endif %}
+
+<h3>Категории</h3>
+<ul>
+{% for cat in categories %}
+    <li><a href="/facts/?category={{ cat }}">{{ cat }}</a></li>
+{% endfor %}
+</ul>
+
+<h3>История</h3>
+<ul>
+{% for h in history %}
+    <li>{{ h.category }}: {{ h.text }}</li>
+{% endfor %}
+</ul>
+{% endblock %}
