@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from . import crud, database
 
+
 # JWT конфигурация
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
