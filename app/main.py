@@ -1,13 +1,15 @@
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from .database import engine, metadata, SessionLocal
+
+# Импортируем правильные зависимости из database
+from .database import engine, metadata, get_db
 from .routers import users, facts
 from . import models, auth
 
-# Создаем таблицы
+# Создаем таблицы (используем metadata напрямую, как в оригинальном коде)
 metadata.create_all(bind=engine)
 app = FastAPI()
 
@@ -21,13 +23,8 @@ templates = Jinja2Templates(directory="app/templates")
 app.include_router(users.router)
 app.include_router(facts.router)
 
-# Зависимость для сессии БД
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Функция get_db теперь импортируется из database.py,
+# поэтому нам не нужно её здесь определять повторно
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -37,7 +34,8 @@ def index(request: Request):
 # Добавление тестовых данных, если они отсутствуют
 @app.on_event("startup")
 def create_test_data():
-    db = SessionLocal()
+    # Используем SessionLocal из database.py через функцию get_db
+    db = next(get_db())
     try:
         # Проверка наличия фактов
         fact_count = db.query(models.Fact).count()

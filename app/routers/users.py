@@ -1,80 +1,43 @@
-from fastapi import APIRouter, Depends, status, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from .. import crud, schemas, auth, database
+from typing import List, Optional
 
-router = APIRouter(prefix="/users", tags=["users"])
-templates = Jinja2Templates(directory="app/templates")
+from .. import schemas, crud, models
+from ..database import get_db
 
-
-@router.get("/register", response_class=HTMLResponse)
-def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
-
-
-@router.post("/register")
-async def register(
-        request: Request,
-        username: str = Form(...),
-        password: str = Form(...),
-        db: Session = Depends(database.SessionLocal)
-):
-    # Проверяем, существует ли уже пользователь с таким именем
-    existing_user = crud.get_user_by_username(db, username)
-    if existing_user:
-        return templates.TemplateResponse(
-            "register.html",
-            {"request": request, "error": "Пользователь с таким именем уже существует"}
-        )
-
-    # Создаем нового пользователя
-    try:
-        user = crud.create_user(db, schemas.UserCreate(username=username, password=password))
-        # После успешной регистрации перенаправляем на страницу входа
-        return RedirectResponse(url="/users/login", status_code=status.HTTP_303_SEE_OTHER)
-    except Exception as e:
-        print(f"Ошибка при регистрации: {e}")  # Логируем ошибку
-        return templates.TemplateResponse(
-            "register.html",
-            {"request": request, "error": "Ошибка при регистрации. Пожалуйста, попробуйте еще раз."}
-        )
+router = APIRouter(
+    prefix="/users",
+    tags=["users"]
+)
 
 
-@router.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+@router.post("/register", response_model=schemas.User)
+def register_user(user: schemas.UserCreate, local_kw: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
 
 
 @router.post("/login")
-async def login(
-        request: Request,
-        username: str = Form(...),
-        password: str = Form(...),
-        db: Session = Depends(database.SessionLocal)
-):
-    user = crud.get_user_by_username(db, username)
-    if not user or not auth.verify_password(password, user.hashed_password):
-        return templates.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "Неверные учетные данные"}
-        )
-
-    access_token = auth.create_access_token(data={"sub": user.username})
-
-    response = RedirectResponse(url="/facts/", status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {access_token}",
-        httponly=True,  # не доступно JavaScript
-        samesite="lax",  # безопаснее при переходах между сайтами
-        max_age=1800  # 30 минут
-    )
-    return response
+def login_user(user: schemas.UserLogin, local_kw: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not crud.verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+    return {"status": "success", "user_id": db_user.id, "username": db_user.username}
 
 
-@router.get("/logout")
-def logout():
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    response.delete_cookie(key="access_token")
-    return response
+@router.get("/", response_model=List[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
+
+
+@router.get("/{user_id}", response_model=schemas.User)
+def read_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user

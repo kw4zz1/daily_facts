@@ -1,23 +1,42 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 
-class UserCreate(BaseModel):
+# Схемы для фактов
+class FactBase(BaseModel):
+    text: str
+    category: str
+
+
+class FactCreate(FactBase):
+    pass
+
+
+class Fact(FactBase):
+    id: int
+    user_id: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Схемы для пользователей
+class UserBase(BaseModel):
+    email: EmailStr
     username: str
+
+
+class UserCreate(UserBase):
     password: str
 
-class UserOut(BaseModel):
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class User(UserBase):
     id: int
-    username: str
+    facts: List[Fact] = []
 
     class Config:
-        from_attributes = True
-
-class FactBase(BaseModel):
-    category: str
-    text: str
-
-class FactOut(FactBase):
-    id: int
-
-    class Config:
-        from_attributes = True
+        orm_mode = True
