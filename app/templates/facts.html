@@ -1,27 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Факт дня</h2>
-{% if fact %}
+
+  <h2>Факт дня{% if current_category %} — {{ current_category }}{% endif %}</h2>
+
+  <div style="margin-bottom:1em;">
+    <a class="button" href="/facts/">Случайный факт</a>
+  </div>
+
+  {% if fact %}
     <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
     <form method="post" action="/facts/save">
-        <input type="hidden" name="fact_id" value="{{ fact.id }}">
-        <button type="submit">Сохранить</button>
+      <input type="hidden" name="fact_id" value="{{ fact.id }}">
+      <button type="submit">Сохранить</button>
     </form>
-{% else %}
+  {% else %}
     <p>Фактов нет</p>
-{% endif %}
+  {% endif %}
 
-<h3>Категории</h3>
-<ul>
-{% for cat in categories %}
-    <li><a href="/facts/?category={{ cat }}">{{ cat }}</a></li>
-{% endfor %}
-</ul>
+  <h3>Категории</h3>
+  <ul>
+    <li><a href="/facts/?category=facts">Общие</a></li>
+    <li><a href="/facts/?category=science">Наука</a></li>
+    <li><a href="/facts/?category=history">История</a></li>
+    <li><a href="/facts/?category=animals">Животные</a></li>
+    <li><a href="/facts/?category=psychology">Психология</a></li>
+  </ul>
 
-<h3>История</h3>
-<ul>
-{% for h in history %}
-    <li>{{ h.category }}: {{ h.text }}</li>
-{% endfor %}
-</ul>
+
+  <h3>История</h3>
+  <ul>
+    {% for h in history %}
+      <li><strong>{{ h.category }}</strong>: {{ h.text }}</li>
+    {% endfor %}
+  </ul>
+
 {% endblock %}

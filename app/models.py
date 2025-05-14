@@ -11,8 +11,9 @@ class User:
         self.id = None
 
 class Fact:
-    def __init__(self, category=None, text=None):
+    def __init__(self, category=None, title=None, text=None):
         self.category = category
+        self.title = title
         self.text = text
         self.id = None
 
@@ -34,6 +35,7 @@ facts_table = Table(
     "facts", metadata,
     Column("id", Integer, primary_key=True, index=True),
     Column("category", String, index=True, nullable=False),
+    Column("title", String, nullable=False),       # Добавлено поле заголовка
     Column("text", String, nullable=False),
 )
 

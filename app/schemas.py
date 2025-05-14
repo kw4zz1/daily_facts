@@ -3,16 +3,15 @@ from typing import Optional, List
 
 # Схемы для фактов
 class FactBase(BaseModel):
-    text: str
-    category: str
+    title: str       # Заголовок факта
+    text: str        # Текст факта
+    category: str    # Категория
 
 class FactCreate(FactBase):
     pass
 
-class Fact(FactBase):
+class FactOut(FactBase):
     id: int
-    user_id: Optional[int] = None
-
     class Config:
         from_attributes = True
 
@@ -27,9 +26,8 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
-class User(UserBase):
+class UserOut(UserBase):
     id: int
-    facts: List[Fact] = []
-
+    facts: List[FactOut] = []
     class Config:
         from_attributes = True

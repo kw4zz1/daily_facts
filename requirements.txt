@@ -7,3 +7,5 @@ passlib[bcrypt]
 python-multipart
 python-jose[cryptography]
 pydantic[email]
+requests
+beautifulsoup4
