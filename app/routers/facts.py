@@ -14,9 +14,9 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def facts_page(
-    request: Request,
-    category: Optional[str] = None,
-    db: Session = Depends(database.get_db),
+        request: Request,
+        category: Optional[str] = None,
+        db: Session = Depends(database.get_db),
 ):
     # Аутентификация
     try:
@@ -43,8 +43,16 @@ async def facts_page(
 
         if remote_facts:
             chosen_text = random.choice(remote_facts)
+
+            # Создаем заголовок из первого предложения или первых 50 символов
+            title_end = chosen_text.find(".")
+            if title_end > 0:
+                title = chosen_text[:title_end + 1]
+            else:
+                title = chosen_text[:min(50, len(chosen_text))] + "..."
+
             chosen = {
-                "title": chosen_text.split(".")[0],
+                "title": title,
                 "text": chosen_text,
                 "category": category
             }
@@ -56,8 +64,8 @@ async def facts_page(
                     text=chosen["text"],
                     category=chosen["category"]
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[ERROR] Could not save fact to DB: {e}")
 
             # подготавливаем для шаблона
             fact = schemas.FactOut(
@@ -66,6 +74,11 @@ async def facts_page(
                 text=chosen["text"],
                 category=chosen["category"]
             )
+        else:
+            # Если не смогли получить факты онлайн, берем из базы для этой категории
+            # Используем существующую функцию get_random_fact с параметром category
+            db_fact = crud.get_random_fact(db, category)
+            fact = schemas.FactOut.from_orm(db_fact) if db_fact else None
     else:
         # Без категории — выбираем случайный из БД
         db_fact = crud.get_random_fact(db)
