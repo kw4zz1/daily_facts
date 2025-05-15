@@ -1,37 +1,52 @@
+{# app/templates/facts.html #}
 {% extends "base.html" %}
 {% block content %}
 
-  <h2>Факт дня{% if current_category %} — {{ current_category }}{% endif %}</h2>
+  <h2>
+    Факт дня
+    {% if current_category %}
+      — {{ CATEGORY_NAMES[CATEGORY_SLUGS[current_category]] }}
+    {% endif %}
+  </h2>
 
-  <div style="margin-bottom:1em;">
+  <div style="margin-bottom: 1em;">
     <a class="button" href="/facts/">Случайный факт</a>
   </div>
 
   {% if fact %}
-    <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
-    <form method="post" action="/facts/save">
-      <input type="hidden" name="fact_id" value="{{ fact.id }}">
-      <button type="submit">Сохранить</button>
-    </form>
+    <div style="margin-bottom: 1em;">
+      <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
+      {% if fact.id and fact.id != 0 %}
+        <form method="post" action="/facts/save">
+          <input type="hidden" name="fact_id" value="{{ fact.id }}">
+          <button type="submit">Сохранить</button>
+        </form>
+      {% endif %}
+    </div>
   {% else %}
     <p>Фактов нет</p>
   {% endif %}
 
   <h3>Категории</h3>
   <ul>
-    <li><a href="/facts/?category=facts">Общие</a></li>
-    <li><a href="/facts/?category=science">Наука</a></li>
-    <li><a href="/facts/?category=history">История</a></li>
-    <li><a href="/facts/?category=animals">Животные</a></li>
-    <li><a href="/facts/?category=psychology">Психология</a></li>
-  </ul>
-
-
-  <h3>История</h3>
-  <ul>
-    {% for h in history %}
-      <li><strong>{{ h.category }}</strong>: {{ h.text }}</li>
+    {% for slug in categories %}
+      <li>
+        <a href="/facts/?category={{ slug }}">
+          {{ CATEGORY_NAMES[CATEGORY_SLUGS[slug]] }}
+        </a>
+      </li>
     {% endfor %}
   </ul>
+
+  <h3>История</h3>
+  {% if history %}
+    <ul>
+      {% for h in history %}
+        <li><strong>{{ h.category }}</strong>: {{ h.text }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>История пуста</p>
+  {% endif %}
 
 {% endblock %}
