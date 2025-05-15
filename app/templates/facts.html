@@ -1,34 +1,38 @@
-{# app/templates/facts.html #}
 {% extends "base.html" %}
 {% block content %}
 
-  <h2>
-    Факт дня
-    {% if current_category %}
-      — {{ CATEGORY_NAMES[CATEGORY_SLUGS[current_category]] }}
-    {% endif %}
-  </h2>
+<h2>
+  Факт дня
+  {% if current_category %}
+    — {{ CATEGORY_NAMES[CATEGORY_SLUGS[current_category]] }}
+  {% endif %}
+</h2>
 
-  <div style="margin-bottom: 1em;">
-    <a class="button" href="/facts/">Случайный факт</a>
-  </div>
+<div style="margin-bottom: 1em;">
+  <button id="new-fact-btn" class="button">Новый факт</button>
+</div>
 
-  {% if fact %}
-    <div style="margin-bottom: 1em;">
-      <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
-      {% if fact.id and fact.id != 0 %}
-        <form method="post" action="/facts/save">
-          <input type="hidden" name="fact_id" value="{{ fact.id }}">
-          <button type="submit">Сохранить</button>
-        </form>
-      {% endif %}
+{% if fact %}
+  <section id="fact-block" class="fact-block" aria-live="polite" aria-atomic="true" style="opacity:1;">
+    <p><strong>{{ fact.category }}</strong>: {{ fact.text }}</p>
+  </section>
+  {% if fact.id and fact.id != 0 %}
+    <div id="save-button-container" class="save-button-container" style="margin-top: 1em;">
+      <form method="post" action="/facts/save">
+        <input type="hidden" name="fact_id" value="{{ fact.id }}">
+        <button type="submit" class="button save-button">Сохранить</button>
+      </form>
     </div>
   {% else %}
-    <p>Фактов нет</p>
+    <div id="save-button-container"></div>
   {% endif %}
+{% else %}
+  <p>Фактов нет</p>
+{% endif %}
 
+<section aria-label="Категории фактов">
   <h3>Категории</h3>
-  <ul>
+  <ul class="categories-list">
     {% for slug in categories %}
       <li>
         <a href="/facts/?category={{ slug }}">
@@ -37,10 +41,12 @@
       </li>
     {% endfor %}
   </ul>
+</section>
 
+<section aria-label="История пользователя">
   <h3>История</h3>
   {% if history %}
-    <ul>
+    <ul class="history-list">
       {% for h in history %}
         <li><strong>{{ h.category }}</strong>: {{ h.text }}</li>
       {% endfor %}
@@ -48,5 +54,47 @@
   {% else %}
     <p>История пуста</p>
   {% endif %}
+</section>
+
+<script>
+  const btn = document.getElementById('new-fact-btn');
+  const factBlock = document.getElementById('fact-block');
+  const saveBtnContainer = document.getElementById('save-button-container');
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Загрузка...';
+    try {
+      const resp = await fetch('/facts/api/fact');
+      if (!resp.ok) throw new Error('Ошибка при получении факта');
+      const fact = await resp.json();
+
+      factBlock.style.animation = 'none';
+      factBlock.offsetHeight; // перерисовка
+
+      factBlock.innerHTML = `
+        <p><strong>${fact.category}</strong>: ${fact.text}</p>
+      `;
+
+      if (fact.id && Number(fact.id) !== 0) {
+        saveBtnContainer.innerHTML = `
+          <form method="post" action="/facts/save">
+            <input type="hidden" name="fact_id" value="${fact.id}">
+            <button type="submit" class="button save-button">Сохранить</button>
+          </form>
+        `;
+      } else {
+        saveBtnContainer.innerHTML = '';
+      }
+
+      factBlock.style.animation = 'fadeInFact 0.8s ease forwards';
+    } catch(e) {
+      alert(e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Новый факт';
+    }
+  });
+</script>
 
 {% endblock %}

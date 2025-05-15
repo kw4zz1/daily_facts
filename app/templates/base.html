@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Daily Facts</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
 </head>
 <body>
     <nav>
@@ -16,8 +18,17 @@
             <a href="/users/register">Регистрация</a>
         {% endif %}
     </nav>
-    <main>
+    <main class="container">
         {% block content %}{% endblock %}
     </main>
+    <script src="/static/js/main.js"></script>
+<div id="fact-modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3 id="modal-category"></h3>
+    <p id="modal-text"></p>
+  </div>
+</div>
+<script src="/static/js/main.js"></script>
 </body>
 </html>

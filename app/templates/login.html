@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Вход</h2>
-{% if error %}<p style="color:red">{{ error }}</p>{% endif %}
-<form method="post">
+<form method="post" novalidate>
+    <h2>Вход</h2>
+    {% if error %}
+      <div class="error-message">{{ error }}</div>
+    {% endif %}
     <div>
-        <label for="username">Логин:</label>
-        <input type="text" name="username" id="username" required>
+        <label for="username">Логин</label>
+        <input type="text" id="username" name="username" required autocomplete="username" />
     </div>
     <div>
-        <label for="password">Пароль:</label>
-        <input type="password" name="password" id="password" required>
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
     </div>
-    <button type="submit">Войти</button>
+    <button type="submit" class="button">Войти</button>
+    <p>Нет аккаунта? <a href="/users/register" class="link-button">Зарегистрироваться</a></p>
 </form>
-<p>Нет аккаунта? <a href="/users/register">Зарегистрироваться</a></p>
 {% endblock %}

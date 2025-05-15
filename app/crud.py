@@ -21,7 +21,6 @@ def get_random_fact(db: Session, category: str = None):
     return query.order_by(func.random()).first()
 
 def list_categories(db: Session):
-    # возвращаем список строк-категорий
     return [row[0] for row in db.query(models.Fact.category).distinct().all()]
 
 def save_user_fact(db: Session, user_id: int, fact_id: int):
@@ -33,7 +32,6 @@ def save_user_fact(db: Session, user_id: int, fact_id: int):
 def get_user_history(db: Session, user_id: int):
     return db.query(models.Fact).join(models.UserFact).filter(models.UserFact.user_id == user_id).all()
 
-# Новая функция для создания факта из парсера
 def create_fact(db: Session, fact: schemas.FactCreate):
     db_fact = models.Fact(
         title=fact.title,
@@ -44,3 +42,6 @@ def create_fact(db: Session, fact: schemas.FactCreate):
     db.commit()
     db.refresh(db_fact)
     return db_fact
+
+def get_fact_by_content(db: Session, text: str):
+    return db.query(models.Fact).filter(models.Fact.text == text).first()

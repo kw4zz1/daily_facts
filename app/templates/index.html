@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Добро пожаловать в Daily Facts</h2>
-<p>Этот сервис позволяет получать случайные интересные факты на каждый день.</p>
 
-{% if request.cookies.get("access_token") %}
-    <p>Вы уже вошли в систему! <a href="/facts/">Перейти к фактам</a></p>
-{% else %}
-    <p><a href="/users/login">Войти</a> или <a href="/users/register">Зарегистрироваться</a>, чтобы начать.</p>
-{% endif %}
+<div class="welcome">
+  <h2>Добро пожаловать в <span class="highlight">Daily Facts</span></h2>
+  <p class="subtitle">Каждый день — новый факт. Удивляй себя и окружающих!</p>
+
+  {% if request.cookies.get("access_token") %}
+    <p><a class="button" href="/facts/">Перейти к фактам</a></p>
+  {% else %}
+    <div class="auth-buttons">
+      <a class="button" href="/users/login">Войти</a>
+      <a class="button outline" href="/users/register">Зарегистрироваться</a>
+    </div>
+  {% endif %}
+</div>
+
 {% endblock %}
