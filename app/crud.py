@@ -45,3 +45,14 @@ def create_fact(db: Session, fact: schemas.FactCreate):
 
 def get_fact_by_content(db: Session, text: str):
     return db.query(models.Fact).filter(models.Fact.text == text).first()
+
+def delete_user_fact(db: Session, user_id: int, fact_id: int):
+    db.query(models.UserFact).filter_by(user_id=user_id, fact_id=fact_id).delete()
+    db.commit()
+
+
+def clear_user_history(db: Session, user_id: int):
+    db.query(models.UserFact).filter(
+        models.UserFact.user_id == user_id
+    ).delete()
+    db.commit()
